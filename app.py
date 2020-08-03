@@ -37,15 +37,33 @@ def index():
         database.insert_row(entry_date,'log_date')
         all_dates=database.query_dates()
         pretty_dates=list(map(lambda di: datetime.datetime.strptime(str(di['entry_date']),'%Y%m%d'),all_dates))
-        pretty_dates=list(map(lambda dobj: datetime.datetime.strftime(dobj,'%B %d %y'),pretty_dates))
+        pretty_dates=list(map(lambda dobj: datetime.datetime.strftime(dobj,'%B%d %Y'),pretty_dates))
         pretty_dates=list(map(lambda dobj: str(dobj),pretty_dates))
         return render_template('home.html',all_dates=pretty_dates)
     else:    
         return render_template('home.html')
 
-@app.route('/view')
-def view():
-    return render_template('day.html')
+@app.route('/view/<date>',methods=['GET','POST'])
+def view(date):
+    if request.method=='POST':
+        food_id=int(request.form.get('food-id'))
+        date=str(date)
+        dateobj=datetime.datetime.strptime(date,'%B %d %Y')
+        dateobj=datetime.datetime.strftime(dateobj,'%Y%m%d')
+        date_dic=database.query_date_id(dateobj)
+        date_id=int(date_dic['id'])
+        database.insert_fooddate(date_id,food_id)
+        return 'jd'
+
+    date=str(date)
+    dateobj=datetime.datetime.strptime(date,'%B%d %Y')
+    ndateobj=datetime.datetime.strftime(dateobj,'%B %d %Y')
+    qdateobj=datetime.datetime.strftime(dateobj,'%Y%m%d')    
+    list_dic=database.query_food_id()
+
+    date_dic=database.query_date_id(qdateobj)
+    date_id=int(date_dic['id'])
+    return render_template('day.html',pretty_date=str(ndateobj),food_dic=list_dic)
 
 @app.route('/food',methods=['GET','POST'])
 def food():

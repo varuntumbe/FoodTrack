@@ -6,7 +6,7 @@ def create_table():
     cur.executescript(""" 
         CREATE TABLE IF NOT EXISTS log_date(
             id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-            entry_date DATE NOT NULL 
+            entry_date DATE NOT NULL UNIQUE
         );
         CREATE TABLE IF NOT EXISTS food(
             id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -39,11 +39,25 @@ def insert_row(table_data,tablename):
         conn.commit()
     elif tablename=='log_date':
         cur.execute(""" 
-            INSERT INTO log_date (entry_date)
+            INSERT OR IGNORE INTO log_date (entry_date)
             VALUES (?)
         """,(table_data,))
         conn.commit()
     conn.close()
+
+
+
+#insert a row in food_date table
+def insert_fooddate(date_id,food_id):
+    conn=sqlite3.connect('data.db')
+    cur=conn.cursor()
+    cur.execute(""" 
+        INSERT OR IGNORE INTO food_date (date_id,food_id)
+        VALUES (?,?)
+    """,(date_id,food_id))
+    conn.commit()
+    conn.close()
+
 
 
 #query database
@@ -67,6 +81,30 @@ def query_dates():
     list_dates=cur.fetchall()
     conn.close()
     return list_dates
+
+#just query food and its id
+def query_food_id():
+    conn=sqlite3.connect('data.db')
+    conn.row_factory=sqlite3.Row
+    cur=conn.cursor()
+    cur.execute(""" 
+        SELECT id,name FROM food
+    """)
+    results=cur.fetchall()
+    return results
+
+
+def query_date_id(dateobj):
+    conn=sqlite3.connect('data.db')
+    conn.row_factory=sqlite3.Row
+    cur=conn.cursor()
+    cur.execute(""" 
+        SELECT id FROM log_date WHERE entry_date=(?)
+    """,(dateobj,))
+    r=cur.fetchone()
+    conn.close()
+    return r
+
 
 #executing
 create_table()
