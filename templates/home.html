@@ -25,7 +25,7 @@
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li class="active"><a href="#">Home</a></li>
-            <li><a href="#">Add Food Item</a></li>
+            <li><a href="{{url_for('food')}}">Add Food Item</a></li>
           </ul>
         </div>
       </div>
@@ -38,7 +38,7 @@
           <form method="POST" action="/">
             <div class="form-group">
               <label for="new-day">New Day</label>
-              <input type="date" class="form-control" id="new-day">
+              <input type="date" class="form-control" id="new-day" name="date">
             </div>
 
             <button type="submit" class="btn btn-primary">Add</button>

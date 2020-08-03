@@ -1,6 +1,7 @@
 from flask import Flask,render_template,url_for,g,request
 import sqlite3
 import database
+import datetime
 
 app=Flask(__name__)
 app.config['DEBUG']=True
@@ -26,8 +27,15 @@ def close_db(err):
 #DATABASE HELPER FUNCTIONS FINISHED
 
 
-@app.route('/')
+@app.route('/',methods=['GET','POST'])
 def index():
+    if request.method=='POST':
+        date=str(request.form.get('date'))
+        database.insert_date(date)
+        ids_list=database.query_tables('log_data')
+        foods_list=database.query_tables('food')
+        list_details=do_list_details()
+        return render_template('home.html')
     return render_template('home.html')
 
 @app.route('/view')
@@ -44,9 +52,22 @@ def food():
         food_data['protein']=request.form.get('protein')
         food_data['carb']=request.form.get('carb')
         food_data['fat']=request.form.get('fat')
-        database.insert_row(food_data,'food')
+        date_arry=str(str(datetime.datetime.now()).split()[0])
+        print(date_arry)
+        database.insert_row(food_data,'food',date_arry)
         list_food_data=database.query_all('food')
         return render_template('add_food.html',list_food_data=list_food_data)
+
+
+
+#usefull functions
+def do_list_details(date_ids_list,foods_id_list):
+    results=list()
+    for ids in date_ids_list:
+        for food_id_list in foods_id_list:
+            if (database.check_existence(date_ids_list,foods_id_list)):
+                pass
+                
 
 if __name__ == "__main__":
     app.run()
