@@ -2,6 +2,7 @@ from flask import Flask,render_template,url_for,g,request
 import sqlite3
 import database
 import datetime
+import json
 
 app=Flask(__name__)
 app.config['DEBUG']=True
@@ -30,13 +31,17 @@ def close_db(err):
 @app.route('/',methods=['GET','POST'])
 def index():
     if request.method=='POST':
-        date=str(request.form.get('date'))
-        database.insert_date(date)
-        ids_list=database.query_tables('log_data')
-        foods_list=database.query_tables('food')
-        list_details=do_list_details()
+        rawdate=request.form.get('date')
+        entry_date=datetime.datetime.strptime(rawdate,'%Y-%m-%d')
+        entry_date=datetime.datetime.strftime(entry_date,'%Y%m%d')
+        database.insert_row(entry_date,'log_date')
+        all_dates=database.query_dates()
+        pretty_dates=list(map(lambda di: datetime.datetime.strptime(str(di['entry_date']),'%Y%m%d'),all_dates))
+        pretty_dates=list(map(lambda dobj: datetime.datetime.strftime(dobj,'%B %d %y'),pretty_dates))
+        pretty_dates=list(map(lambda dobj: str(dobj),pretty_dates))
+        return render_template('home.html',all_dates=pretty_dates)
+    else:    
         return render_template('home.html')
-    return render_template('home.html')
 
 @app.route('/view')
 def view():
@@ -52,22 +57,9 @@ def food():
         food_data['protein']=request.form.get('protein')
         food_data['carb']=request.form.get('carb')
         food_data['fat']=request.form.get('fat')
-        date_arry=str(str(datetime.datetime.now()).split()[0])
-        print(date_arry)
-        database.insert_row(food_data,'food',date_arry)
+        database.insert_row(food_data,'food')
         list_food_data=database.query_all('food')
         return render_template('add_food.html',list_food_data=list_food_data)
-
-
-
-#usefull functions
-def do_list_details(date_ids_list,foods_id_list):
-    results=list()
-    for ids in date_ids_list:
-        for food_id_list in foods_id_list:
-            if (database.check_existence(date_ids_list,foods_id_list)):
-                pass
-                
 
 if __name__ == "__main__":
     app.run()
