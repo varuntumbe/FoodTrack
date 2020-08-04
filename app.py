@@ -40,8 +40,12 @@ def index():
         pretty_dates=list(map(lambda dobj: datetime.datetime.strftime(dobj,'%B %d %Y'),pretty_dates))
         pretty_dates=list(map(lambda dobj: str(dobj),pretty_dates))
         return render_template('home.html',all_dates=pretty_dates)
-    else:    
-        return render_template('home.html')
+    else:
+        all_dates=database.query_dates()
+        pretty_dates=list(map(lambda di: datetime.datetime.strptime(str(di['entry_date']),'%Y%m%d'),all_dates))
+        pretty_dates=list(map(lambda dobj: datetime.datetime.strftime(dobj,'%B %d %Y'),pretty_dates))
+        pretty_dates=list(map(lambda dobj: str(dobj),pretty_dates))    
+        return render_template('home.html',all_dates=pretty_dates)
 
 @app.route('/view/<date>',methods=['GET','POST'])
 def view(date):
@@ -52,6 +56,35 @@ def view(date):
     list_dic=database.query_food_id()
     date_dic=database.query_date_id(qdateobj)
     date_id=int(date_dic['id'])
+
+
+#handling post req
+    if request.method=='POST':
+        food_id=int(request.form.get('food-id'))
+        date=str(date)
+        dateobj=datetime.datetime.strptime(date,'%B %d %Y')
+        dateobj=datetime.datetime.strftime(dateobj,'%Y%m%d')
+        date_dic=database.query_date_id(dateobj)
+        date_id=int(date_dic['id'])
+        database.insert_fooddate(date_id,food_id)
+
+        foods_per_day=database.query_foods_per_day(qdateobj)
+        total_nutrients=list()
+        p=carb=f=cal=0
+        for food in foods_per_day:
+            p+=food['protein']
+            carb+=food['carb']
+            f+=food['fat']
+            cal+=food['calories']
+        total_nutrients.append(p)
+        total_nutrients.append(carb)
+        total_nutrients.append(f)
+        total_nutrients.append(cal)
+        
+        return render_template('day.html',pretty_date=str(ndateobj),food_dic=list_dic,foods_per_day=foods_per_day,total_nutri=total_nutrients)
+
+
+
 
     foods_per_day=database.query_foods_per_day(qdateobj)
     total_nutrients=list()
@@ -65,32 +98,6 @@ def view(date):
     total_nutrients.append(carb)
     total_nutrients.append(f)
     total_nutrients.append(cal)
-
-
-#handling post req
-    if request.method=='POST':
-        food_id=int(request.form.get('food-id'))
-        date=str(date)
-        dateobj=datetime.datetime.strptime(date,'%B %d %Y')
-        dateobj=datetime.datetime.strftime(dateobj,'%Y%m%d')
-        date_dic=database.query_date_id(dateobj)
-        date_id=int(date_dic['id'])
-        database.insert_fooddate(date_id,food_id)
-
-        # foods_per_day=database.query_foods_per_day(qdateobj)
-        # total_nutrients=list()
-        # p=carb=f=cal=0
-        # for food in foods_per_day:
-        #     p+=food['protein']
-        #     carb+=food['carb']
-        #     f+=food['fat']
-        #     cal+=food['calories']
-        # total_nutrients.append(p)
-        # total_nutrients.append(carb)
-        # total_nutrients.append(f)
-        # total_nutrients.append(cal)
-        
-        return render_template('day.html',pretty_date=str(ndateobj),food_dic=list_dic,foods_per_day=foods_per_day,total_nutri=total_nutrients)
     return render_template('day.html',pretty_date=str(ndateobj),food_dic=list_dic,foods_per_day=foods_per_day,total_nutri=total_nutrients)
 
 
