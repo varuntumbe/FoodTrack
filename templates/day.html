@@ -23,7 +23,7 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li><a href="#">Home</a></li>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
             <li><a href="{{ url_for('food') }}">Add Food Item</a></li>
           </ul>
         </div>
@@ -58,26 +58,26 @@
 
               <ul class="nav nav-pills" role="tablist">
                 <li class="active"><a>Total</a></li>
-                <li><a>Protein: <span class="badge">100</span></a></li>
-                <li><a>Carbohydates: <span class="badge">200</span></a></li>
-                <li><a>Fat: <span class="badge">50</span></a></li>
-                <li><a>Calories: <span class="badge">1650</span></a></li>
+                <li><a>Protein: <span class="badge">{{total_nutri[0]}}</span></a></li>
+                <li><a>Carbohydates: <span class="badge">{{total_nutri[1]}}</span></a></li>
+                <li><a>Fat: <span class="badge">{{total_nutri[2]}}</span></a></li>
+                <li><a>Calories: <span class="badge">{{total_nutri[3]}}</span></a></li>
               </ul>
 
             </div>
 
             <div class="page-header"></div>
-
+            {% for food_dic in foods_per_day %}
             <div class="panel-body">
               <ul class="nav nav-pills" role="tablist">
-                <li class="active"><a>Pizza</a></li>
-                <li><a>Protein: <span class="badge">100</span></a></li>
-                <li><a>Carbohydates: <span class="badge">200</span></a></li>
-                <li><a>Fat: <span class="badge">50</span></a></li>
-                <li><a>Calories: <span class="badge">1650</span></a></li>
+                <li class="active"><a>{{food_dic['name']}}</a></li>
+                <li><a>protein: <span class="badge">{{food_dic['Protein']}}</span></a></li>
+                <li><a>Carbohydates: <span class="badge">{{food_dic['carb']}}</span></a></li>
+                <li><a>Fat: <span class="badge">{{food_dic['fat']}}</span></a></li>
+                <li><a>Calories: <span class="badge">{{food_dic['calories']}}</span></a></li>
               </ul>
             </div>
-
+            {% endfor %}
           </div>
         </div>
       </div>

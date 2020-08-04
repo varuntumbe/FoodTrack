@@ -106,5 +106,20 @@ def query_date_id(dateobj):
     return r
 
 
+def query_foods_per_day(date):
+    conn=sqlite3.connect('data.db')
+    conn.row_factory=sqlite3.Row
+    cur=conn.cursor()
+    cur.execute(""" 
+    SELECT entry_date,food_id,name,protein,
+    carb,fat,calories
+    FROM log_date JOIN food_date
+    on log_date.id=food_date.date_id AND entry_date=(?)
+    JOIN food on food_id=food.id
+    """,(date,))
+    result=cur.fetchall()
+    return result
+
+
 #executing
 create_table()
