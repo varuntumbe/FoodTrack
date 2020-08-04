@@ -37,15 +37,25 @@ def index():
         database.insert_row(entry_date,'log_date')
         all_dates=database.query_dates()
         pretty_dates=list(map(lambda di: datetime.datetime.strptime(str(di['entry_date']),'%Y%m%d'),all_dates))
+
+        total_nutri=[]
+        for pdate in all_dates:
+            total_nutri.append(total_nutri_all_dates(pdate['entry_date']))
+
         pretty_dates=list(map(lambda dobj: datetime.datetime.strftime(dobj,'%B %d %Y'),pretty_dates))
         pretty_dates=list(map(lambda dobj: str(dobj),pretty_dates))
-        return render_template('home.html',all_dates=pretty_dates)
+        return render_template('home.html',all_dates=pretty_dates,total_nutri=total_nutri)
     else:
         all_dates=database.query_dates()
         pretty_dates=list(map(lambda di: datetime.datetime.strptime(str(di['entry_date']),'%Y%m%d'),all_dates))
+
+        total_nutri=[]
+        for pdate in all_dates:
+            total_nutri.append(total_nutri_all_dates(pdate['entry_date']))
+
         pretty_dates=list(map(lambda dobj: datetime.datetime.strftime(dobj,'%B %d %Y'),pretty_dates))
         pretty_dates=list(map(lambda dobj: str(dobj),pretty_dates))    
-        return render_template('home.html',all_dates=pretty_dates)
+        return render_template('home.html',all_dates=pretty_dates,total_nutri=total_nutri)
 
 @app.route('/view/<date>',methods=['GET','POST'])
 def view(date):
@@ -115,6 +125,25 @@ def food():
         database.insert_row(food_data,'food')
         list_food_data=database.query_all('food')
         return render_template('add_food.html',list_food_data=list_food_data)
+
+
+
+
+#some useful functions
+def total_nutri_all_dates(qdateobj):
+    foods_per_day=database.query_foods_per_day(qdateobj)
+    total_nutrients=list()
+    p=carb=f=cal=0
+    for food in foods_per_day:
+        p+=food['protein']
+        carb+=food['carb']
+        f+=food['fat']
+        cal+=food['calories']
+    total_nutrients.append(p)
+    total_nutrients.append(carb)
+    total_nutrients.append(f)
+    total_nutrients.append(cal)
+    return total_nutrients
 
 if __name__ == "__main__":
     app.run()
